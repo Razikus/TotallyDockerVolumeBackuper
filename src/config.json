@@ -1,0 +1,8 @@
+{
+    "autoDiscover": true,
+    "processTypes": ["processTypes/*.py"],
+    "backupTypes": ["backupTypes/*.py"],
+    "defaultMethod": {
+        "type": "glacier"
+    }
+}
