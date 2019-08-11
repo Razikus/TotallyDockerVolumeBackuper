@@ -9,29 +9,38 @@ def packVolume(client, sharedObj, spec):
     processType = spec["process"]["type"]
     processor = sharedObj.processedTypes.get(processType, None)
     if(not processor):
+        print(f"[PACKER FAIL] Can't process { processType }")
         return False
-    
     backupVolumeName = processor.getBackupName(spec["process"])
+    print(f"[PACKER] Processing { backupVolumeName } with type { processType }")
     for container in spec["containers"]:
         try:
+            print(f"[PACKER] Pausing associated container { container }")
             client.containers.get(container).pause()
         except:
-            print("Cannot pause container", container)
+            print("[PACKER FAIL] Cannot pause container", container)
     volumePathInContainer = "/volume"
+    print("[PACKER] Starting packer container...")
     client.containers.run("razikus/volumebackuper:1.0", name = containerUuid, tty=True, mounts=[processor.getMountType(spec["process"], volumePathInContainer)], stream=False, detach=False, command=backupVolumeName)
+    print("[PACKER] Done!")
     container = client.containers.get(containerUuid)
-    transferArchive(container, "/" + backupVolumeName, "backups/" + containerUuid + ".tar.gz.tar")
-    tar = tarfile.open("backups/" + containerUuid + ".tar.gz.tar")
-    tar.extractall()
-    tar.close()
-    os.remove("backups/" + containerUuid + ".tar.gz.tar")
+    for toUnpause in spec["containers"]:
+        try:
+            print(f"[PACKER] Unpausing associated container { toUnpause }")
+            client.containers.get(toUnpause).unpause()
+        except:
+            print("[PACKER FAIL] Cannot unpause container", toUnpause)
+    print("[PACKER] Moving packed volume to temp directory...")
+    with tempfile.TemporaryDirectory() as tmpdirname:
+        transferArchive(container, "/" + backupVolumeName, os.path.join(tmpdirname, containerUuid + ".tar.gz.tar"))
+        print("[PACKER] Done!")
+        print("[PACKER] Unpacking packed volume...")
+        tar = tarfile.open(os.path.join(tmpdirname, containerUuid + ".tar.gz.tar"))
+        tar.extractall(path="backups")
+        tar.close()
+        print("[PACKER] Done!")
     container.remove()
 
-    for container in spec["containers"]:
-        try:
-            client.containers.get(container).unpause()
-        except:
-            print("Cannot unpause container", container)
     return True
 
 def transferArchive(container, path, transferPath, chunk_size=2097152):
@@ -47,10 +56,14 @@ def discoverVolumes(client, sharedObj):
     containers = client.containers.list(all=True)
     volumes = {}
     for container in containers:
+        if(sharedObj.isContainerExcluded(container.name)):
+            print("[AUTODISCOVER INFO] Container " + container.name + " excluded")
+            continue
         mountsFromContainer = container.attrs.get("Mounts", dict())
         containerId = container.id
         for mount in mountsFromContainer:
             volumeName = mount["Source"]
+            print("[AUTODISCOVER INFO] Discovered " + mount["Source"] + " from " + container.name)
             if(mount["Source"] in volumes):
                 volumes[volumeName]["_specs"].append(mount)
                 volumes[volumeName]["containers"].append(containerId)
@@ -62,7 +75,7 @@ def discoverVolumes(client, sharedObj):
                 if(processor):
                     volumes[volumeName]["process"] = processor.processMount(mount)
                 else:
-                    print("Can't process type:", mount["Type"])
+                    print("[AUTODISCOVER FAIL] Can't process type:", mount["Type"])
                 
     return volumes
     

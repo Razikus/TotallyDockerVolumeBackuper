@@ -13,4 +13,4 @@ def getMountType(mount, target):
 
 
 def getBackupName(mount):
-    return mount["type"] + mount["name"] + ".tar.gz"
+    return mount["type"] + "-" + mount["name"] + ".tar.gz"

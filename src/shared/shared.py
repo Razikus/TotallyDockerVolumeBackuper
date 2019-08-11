@@ -6,3 +6,6 @@ class SharedObject:
         self.config = config
         self.processedTypes = self.dynamicLoader.loadModulesAndAssignNames(self.config["processTypes"])
         self.backupTypes = self.dynamicLoader.loadModulesAndAssignNames(self.config["backupTypes"])
+    
+    def isContainerExcluded(self, name):
+        return name in self.config["excludedContainersFromAutoDiscover"]

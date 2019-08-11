@@ -4,5 +4,8 @@
     "backupTypes": ["backupTypes/*.py"],
     "defaultMethod": {
         "type": "glacier"
-    }
+    },
+    "excludedContainersFromAutoDiscover": [
+        "traefik", "jenkins_app_1", "skrybashow", "theia.s1", "sklep_db_1", "sklep_wordpress_1"
+    ]
 }
