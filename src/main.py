@@ -11,6 +11,8 @@ def main():
     client = createClient()
     sharedObj = shared.SharedObject(config)
     volumes = discoverVolumes(client, sharedObj)
+    for volume in volumes:
+        packVolume(client, sharedObj, volumes[volume])
 
 def createClient():
     return docker.from_env()
