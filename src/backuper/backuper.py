@@ -8,8 +8,9 @@ def transfer(sharedObj, spec):
     name = spec["name"]
     path = spec["path"]
     processorType = "glacier"
-    print("[TRANSFER] Starting transfer with processor type: " + processorType)
+    print(f"[TRANSFER] Starting transfer of {path} with processor type: " + processorType)
     sharedObj.backupTypes["glacier"].pushArchive(path)
+    os.remove(path)
     
 def packVolume(client, sharedObj, spec):
     containerUuid = str(uuid.uuid4()).replace("-", "")
