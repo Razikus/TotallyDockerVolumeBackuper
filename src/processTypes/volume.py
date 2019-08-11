@@ -1,4 +1,5 @@
 from docker.types import Mount
+import datetime
 
 def processMount(mount):
     result = dict()
@@ -13,4 +14,9 @@ def getMountType(mount, target):
 
 
 def getBackupName(mount):
-    return mount["type"] + "-" + mount["name"] + ".tar.gz"
+    now = datetime.datetime.now()
+    prefix = now.strftime('%Y%m%d%H%M%S')
+    return prefix + mount["type"] + "-" + mount["name"] + ".tar.gz"
+
+def getSourceName(mount):
+    return mount["name"]

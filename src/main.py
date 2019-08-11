@@ -2,7 +2,7 @@
 import json
 import docker 
 import shared
-from backuper.backuper import packVolume, discoverVolumes
+from backuper.backuper import packVolume, discoverVolumes, transfer
 
 def main():
     config = loadAsJson("config.json")
@@ -11,8 +11,14 @@ def main():
     print("[INFO] Starting autodiscovering")
     volumes = discoverVolumes(client, sharedObj)
     print("[INFO] Starting volume backups")
+    toTransfer = []
     for volume in volumes:
-        packVolume(client, sharedObj, volumes[volume])
+        readyForTransfer = packVolume(client, sharedObj, volumes[volume])
+        if(readyForTransfer):
+            toTransfer.append(readyForTransfer)
+    print("[INFO] Startin transfering")
+    for transferable in toTransfer:
+        transfer(sharedObj, transferable)
 
 def createClient():
     return docker.from_env()

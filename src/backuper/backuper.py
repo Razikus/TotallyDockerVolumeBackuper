@@ -4,6 +4,13 @@ import tarfile
 import os
 import tempfile
 
+def transfer(sharedObj, spec):
+    name = spec["name"]
+    path = spec["path"]
+    processorType = "glacier"
+    print("[TRANSFER] Starting transfer with processor type: " + processorType)
+    sharedObj.backupTypes["glacier"].pushArchive(path)
+    
 def packVolume(client, sharedObj, spec):
     containerUuid = str(uuid.uuid4()).replace("-", "")
     processType = spec["process"]["type"]
@@ -41,7 +48,7 @@ def packVolume(client, sharedObj, spec):
         print("[PACKER] Done!")
     container.remove()
 
-    return True
+    return {"name": processor.getSourceName(spec["process"]), "path": os.path.abspath(os.path.join("backups", backupVolumeName))}
 
 def transferArchive(container, path, transferPath, chunk_size=2097152):
     transferFile = open(transferPath, "wb")
