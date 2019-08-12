@@ -7,10 +7,16 @@ import tempfile
 def transfer(sharedObj, spec):
     name = spec["name"]
     path = spec["path"]
-    processorType = "glacier"
-    print(f"[TRANSFER] Starting transfer of {path} with processor type: " + processorType)
-    sharedObj.backupTypes["glacier"].pushArchive(path)
-    os.remove(path)
+    transferMethod = sharedObj.getBackupTypeForVolume(name)
+    transferType = transferMethod["type"]
+    processorType = sharedObj.backupTypes.get(transferType, None)
+    if(not processorType):
+        print(f"[TRANSFER FAIL] Can't process type { transferType }")
+        return False
+    print(f"[TRANSFER] Starting transfer of { path } with processor type: " + transferType)
+    if(processorType.pushArchive(spec, transferMethod, sharedObj)):
+        print(f"[TRANSFER] Removing { path }")
+        os.remove(path)
     
 def packVolume(client, sharedObj, spec):
     containerUuid = str(uuid.uuid4()).replace("-", "")

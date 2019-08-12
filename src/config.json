@@ -3,9 +3,23 @@
     "processTypes": ["processTypes/*.py"],
     "backupTypes": ["backupTypes/*.py"],
     "defaultMethod": {
-        "type": "glacier"
+        "type": "glacier",
+        "vault_name": "XXX",
+        "aws_access_key_id": "X",
+        "aws_secret_access_key": "XXX",
+        "region_name": "eu-central-1"
     },
     "excludedContainersFromAutoDiscover": [
-        "xxx"
+        "traefik", "jenkins_app_1", "skrybashow", "theia.s1"
+    ],
+    "volumeSpecific": [
+        {
+            "name": "volumename",
+            "type": "glacier",
+            "vault_name": "XXX",
+            "aws_access_key_id": "XXXXX",
+            "aws_secret_access_key": "XXXXXXxx",
+            "region_name": "eu-central-1"
+        }
     ]
 }

@@ -16,7 +16,7 @@ def main():
         readyForTransfer = packVolume(client, sharedObj, volumes[volume])
         if(readyForTransfer):
             toTransfer.append(readyForTransfer)
-    print("[INFO] Startin transfering")
+    print("[INFO] Starting transfering")
     for transferable in toTransfer:
         transfer(sharedObj, transferable)
 
